@@ -10,11 +10,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Vérifier l’intention
+# On install yq , un outil pour lire des fichiers YAML en ligne de commande
+# et lire intent.yaml
+      - name: Installer yq (pour lire intent.yaml)
         run: |
-          grep "Site Version 1" index.html
+          sudo apt-get update
+          sudo apt-get install -y yq
 
-      - name: Publier sur GitHub Pages
+# id: intent -> permet d'utiliser les résutltat plus tard
+# TITLE=$(yq '.site.title' intent.yaml) -> extrait "Site Version 1" dans intent.yaml
+# "title=$TITLE" >> $GITHUB_OUTPUT -> stocke la valeur pour les étapes suivantes
+      - name: Lire la version attendue depuis intent.yaml
+        id: intent
+        run: |
+          TITLE=$(yq '.site.title' intent.yaml)
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+
+# EXPECTED="${{ steps.intent.outputs.title }}" -> Récupère "Site Version 1" 
+# depuis l’étape précédente.
+# CURRENT=$(grep -oP '(?<=<h1>).*?(?=</h1>)' index.html) -> Extrait le texte
+# entre <h1> et </h1> dans index.html.
+# Condition IF : if [ "$EXPECTED" != "$CURRENT" ]; then
+# Si le titre dans index.html ne correspond pas à celui dans intent.yaml alors :
+# Correction automatique : sed -i "s|<h1>.*</h1>|<h1>$EXPECTED</h1>|" index.html
+      - name: Vérifier et corriger index.html si nécessaire
+        run: |
+          EXPECTED="${{ steps.intent.outputs.title }}"
+          CURRENT=$(grep -oP '(?<=<h1>).*?(?=</h1>)' index.html)
+
+          echo "Titre attendu : $EXPECTED"
+          echo "Titre trouvé : $CURRENT"
+
+         if [ "$EXPECTED" != "$CURRENT" ]; then
+           echo "Le titre ne correspond pas, correction automatique..."
+           sed -i "s|<h1>.*</h1>|<h1>$EXPECTED</h1>|" index.html
+         else
+           echo "Le titre est correct."
+         fi
+
+      - name: Préparer les fichiers pour GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
@@ -26,6 +60,6 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: main
+      name: github-pages
     steps:
       - uses: actions/deploy-pages@v4
