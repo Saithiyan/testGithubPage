@@ -23,7 +23,7 @@ jobs:
       - name: Lire la version attendue depuis intent.yaml
         id: intent
         run: |
-          TITLE=$(yq '.site.title' intent.yaml)
+          TITLE=$(yq -r '.site.title' intent.yaml)
           echo "title=$TITLE" >> $GITHUB_OUTPUT
 
 # EXPECTED="${{ steps.intent.outputs.title }}" -> Récupère "Site Version 1" 
