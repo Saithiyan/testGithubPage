@@ -41,12 +41,12 @@ jobs:
           echo "Titre attendu : $EXPECTED"
           echo "Titre trouvé : $CURRENT"
 
-         if [ "$EXPECTED" != "$CURRENT" ]; then
-           echo "Le titre ne correspond pas, correction automatique..."
-           sed -i "s|<h1>.*</h1>|<h1>$EXPECTED</h1>|" index.html
-         else
-           echo "Le titre est correct."
-         fi
+          if [ "$EXPECTED" != "$CURRENT" ]; then
+            echo "Le titre ne correspond pas, correction automatique..."
+            sed -i "s|<h1>.*</h1>|<h1>$EXPECTED</h1>|" index.html
+          else
+            echo "Le titre est correct."
+          fi
 
       - name: Préparer les fichiers pour GitHub Pages
         uses: actions/upload-pages-artifact@v3
