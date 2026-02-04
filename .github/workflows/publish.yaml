@@ -26,6 +26,6 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: github-pages
+      name: main
     steps:
       - uses: actions/deploy-pages@v4
